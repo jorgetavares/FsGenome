@@ -2,8 +2,8 @@
 
 module Core = 
 
-    /// collection of functions (as methods) to generate random genotypes
-    /// these can be passed directly to the Individual class construtor
+    /// collection of functions to generate random genotypes
+    /// these can be passed directly to the LinearIndividual construtor
     module LinearChromossome =    
         let randomBinary size (random: System.Random) = 
             [|for i in 1 .. size -> random.Next(2)|]
