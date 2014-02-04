@@ -48,9 +48,9 @@ module Core =
         // build an empty population
         new() = new LinearPopulation<'a>(Array.empty)
 
-        // build a random population
+        // build a random population init with worse case fitness 
         new (size: int, buildIndividual: (unit -> 'a array)) = 
-            let individuals = Array.Parallel.init size (fun _ -> new LinearIndividual<'a>(buildIndividual, 0.0))
+            let individuals = Array.Parallel.init size (fun _ -> new LinearIndividual<'a>(buildIndividual, System.Double.MaxValue))
             new LinearPopulation<'a>(individuals)
     
         // build and evaluate a random population
@@ -59,10 +59,6 @@ module Core =
             new LinearPopulation<'a>(individuals)
 
         member this.Size = this.Individuals.Length
-
-        // evaluates the population given a fitness function
-        member this.Evaluate (fitnessFun : 'a array -> float) = 
-            this.Individuals |> Array.Parallel.iter (fun (x : LinearIndividual<'a>) -> x.Fitness <- fitnessFun x.Chromossome) 
          
 
     module Evaluation =
