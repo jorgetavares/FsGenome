@@ -22,9 +22,8 @@ module ES =
         /// Uncorrelated Mutation with N Step sizes operator
         let uncorrelatedNSteps (random: System.Random) (chromossome: float array) tau1 tau2 epsilon =
             let normal = Normal.WithMeanVariance(0.0, 1.0, random)
-            let fixedSample = normal.Sample()
             let N = chromossome.Length / 2
-            let sigmas = chromossome.[N ..] |> Array.map (fun s -> sigmaCheck (s * exp(tau1 * fixedSample + tau2 * normal.Sample())) epsilon)
+            let sigmas = chromossome.[N ..] |> Array.map (fun s -> sigmaCheck (s * exp(tau1 * normal.Sample() + tau2 * normal.Sample())) epsilon)
             let values = Array.map2 (fun x s -> x + s * normal.Sample()) chromossome.[.. N - 1] sigmas
             Array.append values sigmas
 
