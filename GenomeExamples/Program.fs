@@ -14,7 +14,7 @@ let main argv =
     printfn "Number of logical processors available: %d" Environment.ProcessorCount
     let stopWatch = Stopwatch.StartNew()
     
-    GeneticAlgorithm.RunGenerationalFloat(sphereParams, Fitness.sphereModel)
+    GeneticAlgorithm.RunFloat(sphereParams, Fitness.sphereModel)
     
     stopWatch.Stop()
     printfn "%f" stopWatch.Elapsed.TotalMilliseconds    

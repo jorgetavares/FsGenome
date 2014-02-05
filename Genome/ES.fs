@@ -40,7 +40,7 @@ module ES =
 
     type EvolutionaryStrategy() =      
         /// ES  
-        static member RunSelfAdaptive (parameters: Parameters, fitnessFunction, ?random: System.Random) =
+        static member RunGenerational (parameters: Parameters, fitnessFunction, ?random: System.Random) =
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed) 
             let chromossomeSize = parameters.ChromossomeSize * 2    // plus self-adaptive mutation rate for each gene
             let chromossomeBuilder = (fun () -> LinearChromossome.randomFloat chromossomeSize rng)
