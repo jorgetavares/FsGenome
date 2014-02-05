@@ -28,6 +28,16 @@ module ES =
             Array.append values sigmas
 
 
+    module Crossover = 
+        /// intermediary crossover
+        let intermediaryCrossover (p1: float array) (p2: float array) =
+            Array.map2 (fun x y -> (x + y) / 2.0) p1 p2
+
+        /// discrete crossover
+        let discreteCrossover (random: System.Random) (p1: float array) (p2: float array) =
+            Array.map2 (fun x y -> if random.NextDouble() < 0.5 then x else y) p1 p2    
+
+
     type EvolutionaryStrategy() =      
         /// ES  
         static member RunSelfAdaptive (parameters: Parameters, fitnessFunction, ?random: System.Random) =

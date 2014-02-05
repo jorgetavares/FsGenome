@@ -135,7 +135,7 @@ module Core =
             let o1 = Array.append p1.[0..cutPoint - 1] p2.[cutPoint..p2.Length - 1]
             let o2 = Array.append p2.[0..cutPoint - 1] p1.[cutPoint..p1.Length - 1]
             (o1, o2)
-         
+    
 
     module Mutation = 
         /// apply a mutation operator to an individual according to per individual rate
