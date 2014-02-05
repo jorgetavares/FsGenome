@@ -51,8 +51,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Utilities.fs" />
+    <Compile Include="Fitness.fs" />
     <Compile Include="Core.fs" />
     <Compile Include="GA.fs" />
+    <Compile Include="ES.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup>

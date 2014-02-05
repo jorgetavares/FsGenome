@@ -154,7 +154,7 @@ module Core =
             chromossome |> Array.map (fun gene -> if (random.NextDouble() < rate) then random.NextDouble() else gene)
 
 
-    /// module with base functions to build more specizalized evolutionary algorithms
+    /// module with base functions to build more specialized evolutionary algorithms
     module Algorithm = 
         open Selection
         open Replacement
