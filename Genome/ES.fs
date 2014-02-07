@@ -30,7 +30,7 @@ module ES =
 
     module Crossover = 
         /// intermediary crossover
-        let intermediaryCrossover (p1: float array) (p2: float array) =
+        let intermediaryCrossover (random: System.Random) (p1: float array) (p2: float array) =
             Array.map2 (fun x y -> (x + y) / 2.0) p1 p2
 
         /// discrete crossover
@@ -40,10 +40,11 @@ module ES =
 
     type EvolutionaryStrategy() =      
         /// ES  
-        static member RunGenerational (parameters: Parameters, fitnessFunction, ?random: System.Random) =
+        static member RunGenerational (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp) =
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed) 
+            let crossover = defaultArg crossoverOp Crossover.discreteCrossover
+            let mutation = defaultArg mutationOp Mutation.uncorrelatedNSteps
             let chromossomeSize = parameters.ChromossomeSize * 2    // plus self-adaptive mutation rate for each gene
-            let chromossomeBuilder = (fun () -> LinearChromossome.randomFloat chromossomeSize rng)
-            rng
-            // TODO: change baseEA to allow mutation only and use the self=adaptive params
-        
+            let chromossomeBuilder = (fun () -> LinearChromossome.randomFloat chromossomeSize rng)        
+            Algorithm.generationalES<float> rng parameters chromossomeBuilder crossover mutation fitnessFunction
+            

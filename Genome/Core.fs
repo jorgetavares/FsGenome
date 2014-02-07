@@ -131,6 +131,16 @@ module Core =
                     population.Individuals.[i].Chromossome <- o1
                     population.Individuals.[i + 1].Chromossome <- o2
             population
+
+        /// apply a crossover operator to every element of a population and randomly selectiong the other individual
+        let applyGlobalCrossover (random: System.Random) operator rate (population: LinearPopulation<'a>) =
+            let individuals = 
+                population.Individuals 
+                |> Array.map (fun p1 -> if (random.NextDouble() < rate) then 
+                                            let c: 'a array = operator random p1.Chromossome population.Individuals.[random.Next(population.Size)].Chromossome 
+                                            new LinearIndividual<'a> (c, 0.0) 
+                                        else p1)
+            new LinearPopulation<'a>(individuals)
              
         /// 1 point crossover
         let onePointCrossover (random: System.Random) (p1: 'a array) (p2: 'a array) = 
@@ -201,4 +211,16 @@ module Core =
                 |> evaluate fitnessFunction
                 |> outputStatistics generation
 
+        /// generational ES (mu, lambda) 
+        /// TODO: generalize better with previous generationalEA; a more generic, configurable base standard EA should exist
+        let generationalES<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationOp fitnessFunction =
+            let population = new LinearPopulation<'a>(parameters.PopulationSize, chromossomeBuilder, fitnessFunction)
+            outputStatistics 1 population
+            for generation = 2 to parameters.TotalGenerations do
+                population 
+                //|> applyMutation random mutationOp 1.0
+                |> applyGlobalCrossover random crossoverOp parameters.CrossoverRate
+                |> generational population
+                |> evaluate fitnessFunction
+                |> outputStatistics generation
 
