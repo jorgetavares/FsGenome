@@ -20,6 +20,8 @@ type Parameters(chromossomeSize: int,
                 ?maxGene: int,
                 ?tournamentSize: int,
                 ?replacementMode: ReplacementMode,
+                ?offspringPoolSize : int,
+                ?epsilon : float,
                 ?seed: int) =
     // default values
     let valuePopulationSize = defaultArg populationSize 200
@@ -31,6 +33,8 @@ type Parameters(chromossomeSize: int,
     let valueMaxGene = defaultArg maxGene 9
     let valueTournamentSize = defaultArg tournamentSize 3
     let valueReplacementMode = defaultArg replacementMode Generational
+    let valueOffspringPoolSize = defaultArg offspringPoolSize 100
+    let valueEpsilon = defaultArg epsilon 0.001
     let valueSeed = defaultArg seed 123
 
     // properties
@@ -44,6 +48,8 @@ type Parameters(chromossomeSize: int,
     member val MaxGene = valueMaxGene with get, set
     member val TournamentSize = valueTournamentSize with get, set
     member val ReplacementMode = valueReplacementMode with get, set
+    member val OffspringPoolSize = valueOffspringPoolSize with get, set
+    member val Epsilon = valueEpsilon with get, set
     member val Seed = valueSeed with get, set
 
    
