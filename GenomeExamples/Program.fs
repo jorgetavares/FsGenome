@@ -9,7 +9,7 @@ open Genome.ES
 let main argv = 
 
     // GA parameters
-    let sphereParams = new Parameters(5, seed = 345, totalGenerations = 200, populationSize = 100)
+    let sphereParams = new Parameters(5, seed = 345, totalGenerations = 200, populationSize = 30)
     
     // run GA and measure execution time
     printfn "Number of logical processors available: %d" Environment.ProcessorCount
@@ -23,12 +23,14 @@ let main argv =
 
 
     // ES parameters
-    sphereParams.OffspringPoolSize <- 100
+    sphereParams.OffspringPoolSize <- 200
+    sphereParams.MinGene <- 0
+    sphereParams.MaxGene <- 1
     
     // run ES and measure execution time
     printfn "Number of logical processors available: %d" Environment.ProcessorCount
     let stopWatch = Stopwatch.StartNew()
-    EvolutionaryStrategy.RunGenerational(sphereParams, Fitness.sphereModel)
+    EvolutionaryStrategy.RunCommaSingleStep(sphereParams, Fitness.sphereModel)
     stopWatch.Stop()
     printfn "%f" stopWatch.Elapsed.TotalMilliseconds    
 

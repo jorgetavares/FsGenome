@@ -34,7 +34,7 @@ type Parameters(chromossomeSize: int,
     let valueTournamentSize = defaultArg tournamentSize 3
     let valueReplacementMode = defaultArg replacementMode Generational
     let valueOffspringPoolSize = defaultArg offspringPoolSize 100
-    let valueEpsilon = defaultArg epsilon 0.001
+    let valueEpsilon = defaultArg epsilon 0.0000001
     let valueSeed = defaultArg seed 123
 
     // properties

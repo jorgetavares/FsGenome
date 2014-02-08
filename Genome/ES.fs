@@ -7,13 +7,21 @@ module ES =
     open MathNet.Numerics.Distributions
 
     module Mutation = 
+    /// apply a mutation operator to an individual according to per individual rate
+        let applyGlobalMutation (random: System.Random) operator poolSize (population : LinearPopulation<'a>) = 
+            let offsprings = [| for i in 1 .. poolSize -> 
+                                let c: 'a array = (operator population.Individuals.[random.Next(population.Size)].Chromossome)
+                                new LinearIndividual<'a>(c, 0.0)
+                             |]
+            new LinearPopulation<'a>(offsprings)
+
         /// standard deviations close to zero are unwanted
         let sigmaCheck (value: float) epsilon =
             if value < epsilon then epsilon else value
 
         /// Uncorrelated Mutation with One Step size operator
         let uncorrelatedOneStep (random: System.Random) epsilon (chromossome: float array)  =
-            let tau = 1.0 / sqrt (float chromossome.Length)
+            let tau = 1.0 / sqrt (float (chromossome.Length - 1))
             let normal = Normal.WithMeanVariance(0.0, 1.0, random)
             let sigma = sigmaCheck (chromossome.[chromossome.Length - 1] * exp(tau * normal.Sample())) epsilon
             let offspring = chromossome |> Array.map (fun x -> x + sigma * normal.Sample())
@@ -53,11 +61,9 @@ module ES =
 
 
     module Replacement =
-        /// performs generational replacement where all the parents
-        /// are replaced by the generated offspring
-        let generational (parents: LinearPopulation<'a>) (offspring: LinearPopulation<'a>) = 
-            offspring.Individuals |> Array.sortInPlaceBy (fun o -> o.Fitness) 
-            new LinearPopulation<'a>(offspring.Individuals.[0 .. parents.Size - 1])    
+        let commaReplacement (parents: LinearPopulation<'a>) (offspring: LinearPopulation<'a>) = 
+            let individuals = offspring.Individuals |> Array.sortBy (fun o -> o.Fitness) 
+            new LinearPopulation<'a>(individuals.[0 .. parents.Size - 1])    
 
 
     /// module with base functions to build more specialized evolutionary algorithms
@@ -69,27 +75,39 @@ module ES =
         open MathNet.Numerics.Statistics
         
         /// generational ES (mu, lambda) 
-        /// TODO: generalize better with previous generationalEA; a more generic, configurable base standard EA should exist
-        let generationalES<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationFn fitnessFunction =
+        let commaES<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationFn fitnessFunction =
             let mutationOp = (fun x -> mutationFn random parameters.Epsilon x)
             let population = new LinearPopulation<'a>(parameters.PopulationSize, chromossomeBuilder, fitnessFunction)
             Algorithm.outputStatistics 1 population
             for generation = 2 to parameters.TotalGenerations do
-                population 
-                |> applyGlobalCrossover random crossoverOp parameters.OffspringPoolSize
-                |> applyMutation random mutationOp 1.0
+                population.Clone() 
+                |> applyGlobalMutation random mutationOp parameters.OffspringPoolSize
                 |> evaluate fitnessFunction
-                |> generational population
+                |> commaReplacement population
+                |> evaluate fitnessFunction // replacement function is losing the fitness value, must correct it and eliminate this step
                 |> Algorithm.outputStatistics generation
 
 
     type EvolutionaryStrategy() =      
-        /// ES  
-        static member RunGenerational (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp) =
+        static member RunCommaMultipleSteps (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp) =
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed) 
-            let crossover = defaultArg crossoverOp Crossover.discreteCrossover
+            let crossover = defaultArg crossoverOp Crossover.intermediaryCrossover
             let mutation = defaultArg mutationOp Mutation.uncorrelatedNSteps
             let chromossomeSize = parameters.ChromossomeSize * 2    // plus self-adaptive mutation rate for each gene
-            let chromossomeBuilder = (fun () -> LinearChromossome.randomFloat chromossomeSize rng)        
-            Algorithm.generationalES<float> rng parameters chromossomeBuilder crossover mutation fitnessFunction
+            let fitnessFn = (fun (x: float array) -> fitnessFunction x.[.. parameters.ChromossomeSize - 1])
+            let valuesFn = (fun () -> LinearChromossome.randomFloatRange parameters.ChromossomeSize (float parameters.MinGene) (float parameters.MaxGene) rng)
+            let sigmasFn = (fun () -> LinearChromossome.randomFloat parameters.ChromossomeSize rng)
+            let chromossomeBuilder = (fun () -> Array.append (valuesFn ()) (sigmasFn ()))        
+            Algorithm.commaES<float> rng parameters chromossomeBuilder crossover mutation fitnessFn
+
+        static member RunCommaSingleStep (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp) =
+            let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed) 
+            let crossover = defaultArg crossoverOp Crossover.intermediaryCrossover
+            let mutation = defaultArg mutationOp Mutation.uncorrelatedOneStep
+            let chromossomeSize = parameters.ChromossomeSize + 1    // plus single self-adaptive mutation rate
+            let fitnessFn = (fun (x: float array) -> fitnessFunction x.[.. parameters.ChromossomeSize - 1])
+            let valuesFn = (fun () -> LinearChromossome.randomFloatRange parameters.ChromossomeSize (float parameters.MinGene) (float parameters.MaxGene) rng)
+            let sigmasFn = (fun () -> LinearChromossome.randomFloat 1 rng)
+            let chromossomeBuilder = (fun () -> Array.append (valuesFn ()) (sigmasFn ()))        
+            Algorithm.commaES<float> rng parameters chromossomeBuilder crossover mutation fitnessFn
             

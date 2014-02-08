@@ -14,7 +14,7 @@ module Core =
         let randomFloat size (random: System.Random) = 
             [|for i in 1 .. size -> random.NextDouble()|]
 
-        let randomFloatRange size min max (random: System.Random) = 
+        let randomFloatRange size (min: float) (max: float) (random: System.Random) = 
             [|for i in 1 .. size -> (max - min) * random.NextDouble() + min|]
 
 
@@ -62,6 +62,8 @@ module Core =
             new LinearPopulation<'a>(individuals)
 
         member this.Size = this.Individuals.Length
+
+        member this.Clone() = this.MemberwiseClone() :?> LinearPopulation<'a>
          
 
     module Evaluation =
