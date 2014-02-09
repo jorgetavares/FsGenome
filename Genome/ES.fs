@@ -1,6 +1,6 @@
 ﻿namespace Genome
 
-/// Genetic Algorithms
+/// Evolutionary Strategies
 module ES = 
     open Core
     open MathNet.Numerics.Random
