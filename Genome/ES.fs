@@ -29,6 +29,7 @@ module ES =
             offspring
 
         /// Uncorrelated Mutation with N Step sizes operator
+        /// TODO: review to confirm it's working well
         let uncorrelatedNSteps (random: System.Random) epsilon (chromossome: float array) =
             let normal = Normal.WithMeanVariance(0.0, 1.0, random)
             let N = chromossome.Length / 2
@@ -41,16 +42,12 @@ module ES =
 
      module Crossover =
         /// apply a crossover operator to every element of a population and randomly selectiong the other individual
-        let applyGlobalCrossover (random: System.Random) operator poolSize (population: LinearPopulation<'a>) =
-            let individuals = 
-                [| for i in 1 .. poolSize -> 
-                    let chromossome : 'a array = operator random 
-                                                          population.Individuals.[random.Next(population.Size)].Chromossome 
-                                                          population.Individuals.[random.Next(population.Size)].Chromossome
-                    new LinearIndividual<'a>(chromossome, 0.0)
-                |] 
-            new LinearPopulation<'a>(individuals)
-
+        let applyGlobalCrossover (random: System.Random) operator (population: LinearPopulation<'a>) =
+            for i in 0 .. population.Size - 1 do 
+                population.Individuals.[i].Chromossome <- operator random population.Individuals.[i].Chromossome 
+                                                                          population.Individuals.[random.Next(population.Size)].Chromossome
+            population
+                    
         /// intermediary crossover
         let intermediaryCrossover (random: System.Random) (p1: float array) (p2: float array) =
             Array.map2 (fun x y -> (x + y) / 2.0) p1 p2
@@ -63,7 +60,9 @@ module ES =
     module Replacement =
         let commaReplacement (parents: LinearPopulation<'a>) (offspring: LinearPopulation<'a>) = 
             let individuals = offspring.Individuals |> Array.sortBy (fun o -> o.Fitness) 
-            new LinearPopulation<'a>(individuals.[0 .. parents.Size - 1])    
+            parents.Individuals <- individuals.[0 .. parents.Size - 1]
+            parents
+               
 
 
     /// module with base functions to build more specialized evolutionary algorithms
@@ -82,9 +81,9 @@ module ES =
             for generation = 2 to parameters.TotalGenerations do
                 population.Clone() 
                 |> applyGlobalMutation random mutationOp parameters.OffspringPoolSize
+                |> applyGlobalCrossover random crossoverOp 
                 |> evaluate fitnessFunction
                 |> commaReplacement population
-                |> evaluate fitnessFunction // replacement function is losing the fitness value, must correct it and eliminate this step
                 |> Algorithm.outputStatistics generation
 
 

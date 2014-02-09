@@ -9,7 +9,7 @@ open Genome.ES
 let main argv = 
 
     // GA parameters
-    let sphereParams = new Parameters(5, seed = 345, totalGenerations = 200, populationSize = 30)
+    let sphereParams = new Parameters(30, seed = 345, totalGenerations = 100, populationSize = 30)
     
     // run GA and measure execution time
     printfn "Number of logical processors available: %d" Environment.ProcessorCount
