@@ -113,7 +113,7 @@ module Core =
             for i = 1 to population.Size - 1 do
                 if (population.Individuals.[i].Fitness < best.Fitness) then
                     best <- population.Individuals.[i]
-            best.Clone()            
+            best.Clone()                  
 
         /// tournament selection operator for minimization
         let tournament (random: System.Random) size (population: LinearPopulation<'a>) =  
@@ -188,6 +188,8 @@ module Core =
                 |> eliteStrategy random (best population)   
                 |> evaluate fitnessFunction
                 |> outputStatistics generation
+            best population
+                
 
         /// steady-state 
         let steadyStateEA<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationFn selectionOp fitnessFunction =
@@ -202,5 +204,7 @@ module Core =
                 |> steadyStateRandom random population
                 |> evaluate fitnessFunction
                 |> outputStatistics generation
+            best population
+              
 
 

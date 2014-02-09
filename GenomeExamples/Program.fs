@@ -14,7 +14,7 @@ let main argv =
     // run GA and measure execution time
     printfn "Number of logical processors available: %d" Environment.ProcessorCount
     let stopWatch = Stopwatch.StartNew()
-    GeneticAlgorithm.RunFloat(sphereParams, Fitness.sphereModel)
+    GeneticAlgorithm.RunFloat(sphereParams, Fitness.sphereModel).ToString() |> printfn "%s" 
     stopWatch.Stop()
     printfn "%f" stopWatch.Elapsed.TotalMilliseconds    
 
@@ -30,7 +30,7 @@ let main argv =
     // run ES and measure execution time
     printfn "Number of logical processors available: %d" Environment.ProcessorCount
     let stopWatch = Stopwatch.StartNew()
-    EvolutionaryStrategy.RunCommaSingleStep(sphereParams, Fitness.sphereModel)
+    EvolutionaryStrategy.RunCommaSingleStep(sphereParams, Fitness.sphereModel).ToString() |> printfn "%s"
     stopWatch.Stop()
     printfn "%f" stopWatch.Elapsed.TotalMilliseconds    
 

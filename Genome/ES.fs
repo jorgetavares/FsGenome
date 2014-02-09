@@ -85,6 +85,7 @@ module ES =
                 |> evaluate fitnessFunction
                 |> commaReplacement population
                 |> Algorithm.outputStatistics generation
+            Core.Selection.best population
 
 
     type EvolutionaryStrategy() =      
