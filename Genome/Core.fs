@@ -53,12 +53,12 @@ module Core =
 
         // build a random population init with worse case fitness 
         new (size: int, buildIndividual: (unit -> 'a array)) = 
-            let individuals = Array.Parallel.init size (fun _ -> new LinearIndividual<'a>(buildIndividual, System.Double.MaxValue))
+            let individuals = Array.init size (fun _ -> new LinearIndividual<'a>(buildIndividual, System.Double.MaxValue))
             new LinearPopulation<'a>(individuals)
     
         // build and evaluate a random population
         new (size : int, buildIndividual : (unit -> 'a array), fitnessFun : ('a array -> float)) = 
-            let individuals = Array.Parallel.init size (fun _ -> new LinearIndividual<'a>(buildIndividual, fitnessFun))
+            let individuals = Array.init size (fun _ -> new LinearIndividual<'a>(buildIndividual, fitnessFun))
             new LinearPopulation<'a>(individuals)
 
         member this.Size = this.Individuals.Length
@@ -69,7 +69,7 @@ module Core =
     module Evaluation =
         /// applies a fitness function to a population
         let evaluate fitnessFunction (population: LinearPopulation<'a>) = 
-            population.Individuals |> Array.Parallel.iter (fun (i : LinearIndividual<'a>) -> i.Fitness <- fitnessFunction i.Chromossome)
+            population.Individuals |> Array.iter (fun (i : LinearIndividual<'a>) -> i.Fitness <- fitnessFunction i.Chromossome)
             population
 
 
@@ -78,13 +78,13 @@ module Core =
         /// are replaced by the generated offspring
         let generational (parents: LinearPopulation<'a>) (offspring: LinearPopulation<'a>) = 
             offspring.Individuals 
-            |> Array.Parallel.iteri (fun i offspring -> parents.Individuals.[i] <- offspring)
+            |> Array.iteri (fun i offspring -> parents.Individuals.[i] <- offspring)
             parents    
             
         /// replaces randomly two individuals in the population with the two offspring
         let steadyStateRandom (random: System.Random) (parents: LinearPopulation<'a>) (offspring: LinearPopulation<'a>) =
             offspring.Individuals
-            |> Array.Parallel.iter (fun offspring -> parents.Individuals.[random.Next(parents.Size)] <- offspring)
+            |> Array.iter (fun offspring -> parents.Individuals.[random.Next(parents.Size)] <- offspring)
             parents
         
         /// performs the elistist strategy where the best individual from
@@ -98,7 +98,7 @@ module Core =
         /// applies a selection operator to produce the set of individuals
         /// that will be subject to recombination and mutation
         let select selectionFn (population: LinearPopulation<'a>) = 
-            let individuals = Array.Parallel.map (fun _ -> selectionFn population) population.Individuals
+            let individuals = Array.map (fun _ -> selectionFn population) population.Individuals
             new LinearPopulation<'a>(individuals)
 
         /// select only two individuals of the original 
@@ -146,7 +146,7 @@ module Core =
         /// apply a mutation operator to an individual according to per individual rate
         let applyMutation (random: System.Random) operator rate (population : LinearPopulation<'a>) = 
             population.Individuals 
-            |> Array.Parallel.iter (fun (i : LinearIndividual<'a>) -> if (random.NextDouble() < rate) then i.Chromossome <- operator i.Chromossome)
+            |> Array.iter (fun (i : LinearIndividual<'a>) -> if (random.NextDouble() < rate) then i.Chromossome <- operator i.Chromossome)
             population
 
         /// flip mutation for binary chromossomes
@@ -170,7 +170,7 @@ module Core =
 
         /// output generation statistics
         let outputStatistics generation (population: LinearPopulation<'a>) =
-            let samples = population.Individuals |> Array.Parallel.map (fun i -> i.Fitness)
+            let samples = population.Individuals |> Array.map (fun i -> i.Fitness)
             let stats = new DescriptiveStatistics(samples)
             printfn "%d\t%f\t%f\t%f\t%f\t%f" generation stats.Minimum stats.Maximum stats.Mean stats.Variance stats.StandardDeviation
         
