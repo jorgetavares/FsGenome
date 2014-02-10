@@ -154,6 +154,10 @@ module Core =
             let flipGene gene = if (gene = 0) then 1 else 0
             chromossome |> Array.map (fun gene -> if (random.NextDouble() < rate) then flipGene gene else gene)
 
+        /// flip mutation for integer chromossomes
+        let flipIntegerMutation (random: System.Random) (chromossome: int array) rate min max = 
+            chromossome |> Array.map (fun gene -> if (random.NextDouble() < rate) then random.Next(min, max) else gene)
+
         /// uniform mutation
         let uniformMutation (random: System.Random) (chromossome: float array) rate =
             chromossome |> Array.map (fun gene -> if (random.NextDouble() < rate) then random.NextDouble() else gene)
@@ -175,8 +179,7 @@ module Core =
             printfn "%d\t%f\t%f\t%f\t%f\t%f" generation stats.Minimum stats.Maximum stats.Mean stats.Variance stats.StandardDeviation
         
         /// standard evolutionary algorithm 
-        let generationalEA<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationFn selectionOp fitnessFunction =
-            let mutationOp = (fun x -> mutationFn random x parameters.MutationRatePerGene)
+        let generationalEA<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationOp selectionOp fitnessFunction =
             let population = new LinearPopulation<'a>(parameters.PopulationSize, chromossomeBuilder, fitnessFunction)
             outputStatistics 1 population
             for generation = 2 to parameters.TotalGenerations do
@@ -192,8 +195,7 @@ module Core =
                 
 
         /// steady-state 
-        let steadyStateEA<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationFn selectionOp fitnessFunction =
-            let mutationOp = (fun x -> mutationFn random x parameters.MutationRatePerGene)
+        let steadyStateEA<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationOp selectionOp fitnessFunction =
             let population = new LinearPopulation<'a>(parameters.PopulationSize, chromossomeBuilder, fitnessFunction)
             outputStatistics 1 population
             for generation = 2 to parameters.TotalGenerations do

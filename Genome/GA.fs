@@ -10,7 +10,8 @@ module GA =
         static member RunBinary (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp, ?selectionOp) =
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed)  
             let crossover = defaultArg crossoverOp Crossover.onePointCrossover
-            let mutation = defaultArg mutationOp Mutation.flipMutation
+            let mutationFn = defaultArg mutationOp Mutation.flipMutation
+            let mutation = (fun x -> mutationFn rng x parameters.MutationRatePerGene)
             let selection = defaultArg selectionOp (fun pop -> Selection.tournament rng parameters.TournamentSize pop)  
             let chromossomeBuilder = (fun () -> LinearChromossome.randomBinary parameters.ChromossomeSize rng)
             match parameters.ReplacementMode with
@@ -21,7 +22,8 @@ module GA =
         static member RunInteger (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp, ?selectionOp) = 
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed)  
             let crossover = defaultArg crossoverOp Crossover.onePointCrossover
-            let mutation = defaultArg mutationOp Mutation.flipMutation
+            let mutationFn = defaultArg mutationOp Mutation.flipIntegerMutation
+            let mutation = (fun x -> mutationFn rng x parameters.MutationRatePerGene parameters.MinGene parameters.MaxGene)
             let selection = defaultArg selectionOp (fun pop -> Selection.tournament rng parameters.TournamentSize pop)
             let chromossomeBuilder = (fun () -> LinearChromossome.randomInteger parameters.ChromossomeSize parameters.MinGene parameters.MaxGene rng)
             match parameters.ReplacementMode with
@@ -32,7 +34,8 @@ module GA =
         static member RunFloat (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp, ?selectionOp) =
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed)  
             let crossover = defaultArg crossoverOp Crossover.onePointCrossover
-            let mutation = defaultArg mutationOp Mutation.uniformMutation
+            let mutationFn = defaultArg mutationOp Mutation.uniformMutation
+            let mutation = (fun x -> mutationFn rng x parameters.MutationRatePerGene)
             let selection = defaultArg selectionOp (fun pop -> Selection.tournament rng parameters.TournamentSize pop) 
             let chromossomeBuilder = (fun () -> LinearChromossome.randomFloat parameters.ChromossomeSize rng)
             match parameters.ReplacementMode with
