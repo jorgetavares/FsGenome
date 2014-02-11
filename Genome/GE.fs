@@ -1,13 +1,13 @@
 ﻿namespace Genome
 
-/// Genetic Algorithms
+/// Grammatical Evolution
 module GE = 
     open Core
     open MathNet.Numerics.Random
 
-    /// TODO: implement genotype to phenotype evaluation
+    /// TODO: implement GE engine
         
-    type GramaticalEvolution() =      
+    type GrammaticalEvolution() =      
         /// GA + mapping mechanism
         static member RunInteger (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp, ?selectionOp) =
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed)  
