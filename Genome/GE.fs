@@ -5,10 +5,9 @@ module GE =
     open Core
     open MathNet.Numerics.Random
 
-    /// TODO: implement GE engine
-        
+    /// TODO: complete basic implementation    
     type GrammaticalEvolution() =      
-        /// GA + mapping mechanism
+        /// GA + mapping mechanism 
         static member RunInteger (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp, ?selectionOp) =
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed)  
             let crossover = defaultArg crossoverOp Crossover.onePointCrossover

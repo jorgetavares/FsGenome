@@ -58,12 +58,18 @@ module ES =
 
 
     module Replacement =
+        /// (mu, lambda)
         let commaReplacement (parents: LinearPopulation<'a>) (offspring: LinearPopulation<'a>) = 
             let individuals = offspring.Individuals |> Array.sortBy (fun o -> o.Fitness) 
             parents.Individuals <- individuals.[0 .. parents.Size - 1]
             parents
-               
 
+        /// (mu + lambda)
+        let plusReplacement (parents: LinearPopulation<'a>) (offspring: LinearPopulation<'a>) = 
+            let individuals = (Array.append parents.Individuals offspring.Individuals ) |> Array.sortBy (fun o -> o.Fitness) 
+            parents.Individuals <- individuals.[0 .. parents.Size - 1]
+            parents
+              
 
     /// module with base functions to build more specialized evolutionary algorithms
     module Algorithm = 
@@ -73,7 +79,7 @@ module ES =
         open Evaluation
         open MathNet.Numerics.Statistics
         
-        /// generational ES (mu, lambda) 
+        /// generational ES (mu, lambda)
         let commaES<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationFn fitnessFunction =
             let mutationOp = (fun x -> mutationFn random parameters.Epsilon x)
             let population = new LinearPopulation<'a>(parameters.PopulationSize, chromossomeBuilder, fitnessFunction)
@@ -87,7 +93,22 @@ module ES =
                 |> Algorithm.outputStatistics generation
             Core.Selection.best population
 
+        /// "steady-state" ES (mu + lambda)
+        let plusES<'a> (random: System.Random) (parameters: Parameters) chromossomeBuilder crossoverOp mutationFn fitnessFunction =
+            let mutationOp = (fun x -> mutationFn random parameters.Epsilon x)
+            let population = new LinearPopulation<'a>(parameters.PopulationSize, chromossomeBuilder, fitnessFunction)
+            Algorithm.outputStatistics 1 population
+            for generation = 2 to parameters.TotalGenerations do
+                population.Clone() 
+                |> applyGlobalMutation random mutationOp parameters.OffspringPoolSize
+                |> applyGlobalCrossover random crossoverOp 
+                |> evaluate fitnessFunction
+                |> plusReplacement population
+                |> Algorithm.outputStatistics generation
+            Core.Selection.best population
 
+
+    /// TODO: simplify code
     type EvolutionaryStrategy() =      
         static member RunCommaMultipleSteps (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp) =
             let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed) 
@@ -110,4 +131,26 @@ module ES =
             let sigmasFn = (fun () -> LinearChromossome.randomFloat 1 rng)
             let chromossomeBuilder = (fun () -> Array.append (valuesFn ()) (sigmasFn ()))        
             Algorithm.commaES<float> rng parameters chromossomeBuilder crossover mutation fitnessFn
+
+        static member RunPlusMultipleSteps (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp) =
+            let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed) 
+            let crossover = defaultArg crossoverOp Crossover.intermediaryCrossover
+            let mutation = defaultArg mutationOp Mutation.uncorrelatedNSteps
+            let chromossomeSize = parameters.ChromossomeSize * 2    // plus self-adaptive mutation rate for each gene
+            let fitnessFn = (fun (x: float array) -> fitnessFunction x.[.. parameters.ChromossomeSize - 1])
+            let valuesFn = (fun () -> LinearChromossome.randomFloatRange parameters.ChromossomeSize (float parameters.MinGene) (float parameters.MaxGene) rng)
+            let sigmasFn = (fun () -> LinearChromossome.randomFloat parameters.ChromossomeSize rng)
+            let chromossomeBuilder = (fun () -> Array.append (valuesFn ()) (sigmasFn ()))        
+            Algorithm.plusES<float> rng parameters chromossomeBuilder crossover mutation fitnessFn
+
+        static member RunPlusSingleStep (parameters: Parameters, fitnessFunction, ?random: System.Random, ?crossoverOp, ?mutationOp) =
+            let rng = defaultArg random (Random.mersenneTwisterSeed parameters.Seed) 
+            let crossover = defaultArg crossoverOp Crossover.intermediaryCrossover
+            let mutation = defaultArg mutationOp Mutation.uncorrelatedOneStep
+            let chromossomeSize = parameters.ChromossomeSize + 1    // plus single self-adaptive mutation rate
+            let fitnessFn = (fun (x: float array) -> fitnessFunction x.[.. parameters.ChromossomeSize - 1])
+            let valuesFn = (fun () -> LinearChromossome.randomFloatRange parameters.ChromossomeSize (float parameters.MinGene) (float parameters.MaxGene) rng)
+            let sigmasFn = (fun () -> LinearChromossome.randomFloat 1 rng)
+            let chromossomeBuilder = (fun () -> Array.append (valuesFn ()) (sigmasFn ()))        
+            Algorithm.plusES<float> rng parameters chromossomeBuilder crossover mutation fitnessFn
             

@@ -55,6 +55,7 @@
     <Compile Include="Core.fs" />
     <Compile Include="GA.fs" />
     <Compile Include="ES.fs" />
+    <Compile Include="GE.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup>
