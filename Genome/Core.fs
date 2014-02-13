@@ -122,6 +122,18 @@ module Core =
                 let current = population.Individuals.[random.Next(population.Size)]
                 if (current.Fitness < best.Fitness) then best <- current
             best.Clone() 
+
+        /// roulette wheel selection operator
+        let rouletteWheel (random: System.Random) (population: LinearPopulation<'a>) = 
+            let total = Array.sumBy (fun (i: LinearIndividual<'a>) -> i.Fitness) population.Individuals
+            let probability = Array.map (fun (i: LinearIndividual<'a>) -> i.Fitness / total) population.Individuals
+            let mutable n = 0
+            let mutable sum = probability.[n]
+            let u = random.NextDouble()
+            while sum < u do
+                n <- n + 1
+                sum <- sum + probability.[n]
+            population.Individuals.[n].Clone() 
    
     
     module Crossover =
