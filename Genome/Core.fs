@@ -140,7 +140,20 @@ module Core =
             let o1 = Array.append p1.[0..cutPoint - 1] p2.[cutPoint..p2.Length - 1]
             let o2 = Array.append p2.[0..cutPoint - 1] p1.[cutPoint..p1.Length - 1]
             (o1, o2)
-    
+
+        /// uniform crossover
+        let uniformCrossover (random: System.Random) (p1: 'a array) (p2: 'a array) = 
+            let o1 = Array.zeroCreate p1.Length
+            let o2 = Array.zeroCreate p2.Length
+            for i in 0 .. p1.Length do
+                if (random.NextDouble() < 0.5) then
+                    o1.[i] <- p1.[i]
+                    o2.[i] <- p2.[i]
+                else
+                    o1.[i] <- p2.[i]
+                    o2.[i] <- p1.[i]
+            (o1, o2)
+   
 
     module Mutation = 
         /// apply a mutation operator to an individual according to per individual rate
