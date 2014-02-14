@@ -17,6 +17,17 @@ module Core =
         let randomFloatRange size (min: float) (max: float) (random: System.Random) = 
             [|for i in 1 .. size -> (max - min) * random.NextDouble() + min|]
 
+        let randomPermutation size (random: System.Random) = 
+            let array = [|0 .. size - 1|]
+            let n = array.Length
+            for x in 1 .. array.Length do
+                let i = n - x
+                let j = random.Next(i)
+                let tmp = array.[i]
+                array.[i] <- array.[j]
+                array.[j] <- tmp
+            array
+
 
     /// an individual holds a genotypes of a given type and a fitness value
     type LinearIndividual<'a>(chromossome: 'a array, fitness: float) =    
