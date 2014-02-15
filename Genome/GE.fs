@@ -13,7 +13,7 @@ module GE =
             let rules = new Dictionary<string, string array>()
             grammar
             |> Array.map (fun r -> Regex.Split(r, ":=")) 
-            |> Array.iter (fun r -> rules.Add(r.[0], r.[1].Split('|')))  
+            |> Array.iter (fun r -> rules.Add(r.[0].Trim(), r.[1].Split('|') |> Array.map (fun t -> t.Trim())))  
 
         member val Rules = parseGrammar grammar with get
 
