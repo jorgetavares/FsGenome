@@ -3,6 +3,7 @@
 /// Grammatical Evolution
 module GE = 
     open Core
+    open System.IO
     open System.Collections.Generic
     open System.Text.RegularExpressions
     open MathNet.Numerics.Random
@@ -16,6 +17,9 @@ module GE =
             |> Array.iter (fun r -> rules.Add(r.[0].Trim(), r.[1].Split('|') |> Array.map (fun t -> t.Trim())))  
 
         member val Rules = parseGrammar grammar with get
+
+        new(grammar: string) = 
+            new Grammar(File.ReadAllLines(grammar))
 
     /// TODO: complete basic implementation    
     type GrammaticalEvolution() =      
