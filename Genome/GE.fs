@@ -9,17 +9,25 @@ module GE =
     open MathNet.Numerics.Random
 
     /// returns a dict that represents a grammar
-    type Grammar(grammar: string[]) = 
+    type Grammar(grammar: string[], startSymbol: string) = 
         let parseGrammar grammar = 
             let rules = new Dictionary<string, string array>()
             grammar
             |> Array.map (fun r -> Regex.Split(r, ":=")) 
-            |> Array.iter (fun r -> rules.Add(r.[0].Trim(), r.[1].Split('|') |> Array.map (fun t -> t.Trim())))  
+            |> Array.iter (fun r -> rules.Add(r.[0].Trim(), r.[1].Split('|') |> Array.map (fun t -> t.Trim())))
+            rules  
 
         member val Rules = parseGrammar grammar with get
+        member val StartSymbol = startSymbol with get
 
-        new(grammar: string) = 
-            new Grammar(File.ReadAllLines(grammar))
+        new(filename: string) = 
+            let grammar = File.ReadAllLines(filename)
+            let start = Regex.Split(grammar.[0], ":=").[0].Trim()
+            new Grammar(grammar, start)
+        
+        member this.Rewrites(symbol: string) =
+            this.Rules.Values  
+
 
     /// TODO: complete basic implementation    
     type GrammaticalEvolution() =      
