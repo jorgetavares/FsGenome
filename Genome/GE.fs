@@ -25,8 +25,24 @@ module GE =
             let start = Regex.Split(grammar.[0], ":=").[0].Trim()
             new Grammar(grammar, start)
         
-        member this.Rewrites(symbol: string) =
+        member this.ExpressionRules (symbol: string) =
             this.Rules.Values  
+
+        member this.ContainsExpression (symbol: string) =
+            this.Rules.ContainsKey(symbol)
+
+    /// given a grammar with a start symbol, a chromossome of integers and wrap flag
+    /// builds a program which is a derivative grammar
+    /// TODO: concatenate program elements, add correct index selection from chromossome, add wrap mechanism
+    let mapGrammar (grammar: Grammar) = 
+        let rec map program = 
+            if grammar.ContainsExpression(program) then
+                let rules =  grammar.ExpressionRules(program)
+                let index = 1 // needs to map to chromossome integer
+                map rules.[index % rules.Count]
+            else
+                grammar
+        map grammar.StartSymbol
 
 
     /// TODO: complete basic implementation    
