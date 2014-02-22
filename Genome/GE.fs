@@ -11,10 +11,10 @@ module GE =
     /// returns a dict that represents a grammar
     type Grammar(grammar: string[], startSymbol: string) = 
         let parseGrammar grammar = 
-            let rules = new Dictionary<string, string array>()
+            let rules = new Dictionary<string, string>()
             grammar
             |> Array.map (fun r -> Regex.Split(r, ":=")) 
-            |> Array.iter (fun r -> rules.Add(r.[0].Trim(), r.[1].Split('|') |> Array.map (fun t -> t.Trim())))
+            |> Array.iter (fun r -> rules.Add(r.[0].Trim(), r.[1].Trim()))
             rules  
 
         member val Rules = parseGrammar grammar with get
@@ -26,25 +26,36 @@ module GE =
             new Grammar(grammar, start)
         
         member this.ExpressionRules (symbol: string) =
-            this.Rules.Values  
+            this.Rules.[symbol].Split('|') |> Array.map (fun r -> r.Trim())
 
         member this.ContainsExpression (symbol: string) =
             this.Rules.ContainsKey(symbol)
 
-    /// given a grammar with a start symbol, a chromossome of integers and wrap flag
-    /// builds a program which is a derivative grammar
-    /// TODO: concatenate program elements, add correct index selection from chromossome, add wrap mechanism
-    let mapGrammar (grammar: Grammar) = 
-        let rec map program = 
-            if grammar.ContainsExpression(program) then
-                let rules =  grammar.ExpressionRules(program)
-                let index = 1 // needs to map to chromossome integer
-                map rules.[index % rules.Count]
+        member this.Symbols =
+            this.Rules.Keys
+
+    /// generates a program using a grammar and a chromossome to map the rules
+    let generateProgram (grammar: Grammar) (chromossome: int array) =
+        let program = [grammar.StartSymbol]
+        let index = ref 0
+        let rec parse (expression: string list) =
+            if expression.Head.Contains(" ") then
+                Seq.toList (expression.Head.Split(' '))
+                |> List.collect (fun e -> parse [e])
+            elif grammar.ContainsExpression(expression.Head) then
+                let rules = grammar.ExpressionRules(expression.Head)
+                let value = chromossome.[!index] % rules.Length
+                index := !index + 1
+                parse [rules.[value]]   
             else
-                grammar
-        map grammar.StartSymbol
+                expression
+        parse program
 
-
+    let packProgram program = 
+        let str = ref System.String.Empty
+        program |> List.iter (fun s -> str := !str + s)
+        !str
+        
     /// TODO: complete basic implementation    
     type GrammaticalEvolution() =      
         /// GA + mapping mechanism 
