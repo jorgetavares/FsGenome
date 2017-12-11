@@ -1,7 +1,5 @@
 ## Genome
 
-An Evolutionary Algorithms library/framework in F# for .NET
+An Evolutionary Algorithms library/framework in F#. Requires MathNet.Numerics.FSharp
 
-Requires MathNet.Numerics.FSharp
-
-*Code is not in development*
+The current code is no longer in active development.
